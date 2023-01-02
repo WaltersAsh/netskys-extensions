@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Buondua = exports.BuonduaInfo = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
-const HentaiHereParser_1 = require("../HentaiHere/HentaiHereParser");
 const BuonduaParser_1 = require("./BuonduaParser");
 const BD_DOMAIN = 'https://buondua.com';
 exports.BuonduaInfo = {
@@ -44,7 +43,6 @@ class Buondua extends paperback_extensions_common_1.Source {
         });
     }
     getMangaShareUrl(mangaId) {
-        console.log('test get manga share url');
         return `${BD_DOMAIN}/${mangaId}`;
     }
     async getHomePageSections(sectionCallback) {
@@ -64,10 +62,8 @@ class Buondua extends paperback_extensions_common_1.Source {
         const hotAlbumsSection = createHomeSection({ id: 'hot', title: 'Hot', view_more: true, type: paperback_extensions_common_1.HomeSectionType.singleRowNormal });
         BuonduaParser_1.parseHomeSections($recent, sectionCallback, recentAlbumsSection);
         BuonduaParser_1.parseHomeSections($hot, sectionCallback, hotAlbumsSection);
-        console.log('test get home page sections');
     }
     async getViewMoreItems(homepageSectionId, metadata) {
-        console.log('test view more items');
         const page = metadata?.page ?? 0;
         let param = '';
         switch (homepageSectionId) {
@@ -87,8 +83,7 @@ class Buondua extends paperback_extensions_common_1.Source {
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        const albums = HentaiHereParser_1.parseViewMore($);
-        console.log(albums);
+        const albums = BuonduaParser_1.parseViewMore($);
         metadata = { page: page + 20 };
         return createPagedResults({
             results: albums,
@@ -98,7 +93,7 @@ class Buondua extends paperback_extensions_common_1.Source {
     async getMangaDetails(mangaId) {
         const data = await BuonduaParser_1.getGalleryData(mangaId, this.requestManager, this.cheerio);
         return createManga({
-            id: mangaId,
+            id: encodeURI(mangaId),
             titles: data.titles,
             image: data.image,
             status: paperback_extensions_common_1.MangaStatus.COMPLETED,
@@ -112,7 +107,7 @@ class Buondua extends paperback_extensions_common_1.Source {
         const data = await BuonduaParser_1.getGalleryData(mangaId, this.requestManager, this.cheerio);
         const chapters = [];
         chapters.push(createChapter({
-            id: data.id,
+            id: encodeURI(data.id),
             mangaId,
             name: '',
             langCode: paperback_extensions_common_1.LanguageCode.UNKNOWN,
@@ -123,7 +118,7 @@ class Buondua extends paperback_extensions_common_1.Source {
     }
     async getChapterDetails(mangaId, chapterId) {
         // return createChapterDetails({
-        //     id: chapterId,
+        //     id: encodeURI(chapterId),
         //     mangaId: mangaId,
         //     longStrip: false,
         //     pages: await getPages(mangaId, this.requestManager, this.cheerio)

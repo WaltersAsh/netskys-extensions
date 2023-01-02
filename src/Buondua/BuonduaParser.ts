@@ -28,9 +28,11 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
             const title = $('img', albumCover).first().attr('alt') ?? '';
             const id = $('a', albumCover).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? '';
 
-            if (!id || !title) continue;
+            if (!id || !title) {
+                continue;
+            }
             albums.push(createMangaTile({
-                id: id,
+                id: encodeURI(id),
                 image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
                 title: createIconText({text: entities.decodeHTML(title)})
             }));
@@ -42,25 +44,22 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
 }
 
 export async function getGalleryData(id: string, requestManager: RequestManager, cheerio: CheerioAPI): Promise<any> {
-
     const request = createRequestObject({
         url: `${BD_DOMAIN}/${id}`,
         method: 'GET'
     });
+    console.log(request.url);
 
-    console.log('this is before request manager is called');
-    const data = await requestManager.schedule(request, 1); // Fails here
-    console.log('this is before cheerio is called');
+    const data = await requestManager.schedule(request, 1);
     const $ = cheerio.load(data.data);
-
-    console.log('this is after cheerio is called');
-
+    
     const titles: string[] = [];
-    titles.push($('h1.article-header').first().text());
+    titles.push($('div.article-header').first().text());
     const image = $('img', 'div.article-fulltext').first().attr('src') ?? 'https://i.imgur.com/GYUxEX8.png';
+    console.log(image);
 
     return {
-        id: id,
+        id: encodeURI(id),
         titles: titles,
         image: image
     }
@@ -77,12 +76,11 @@ export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
         for (const albumCover of albumCovers) {
             const image = $('img', albumCover).first().attr('src') ?? '';
             const title = $('img', albumCover).first().attr('alt') ?? '';
-            console.log(title);
             const id = $('a', albumCover).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? '';
 
             if (!id || !title) continue;
             albums.push(createMangaTile({
-                id: id,
+                id: encodeURI(id),
                 image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
                 title: createIconText({text: entities.decodeHTML(title)})
             }));
@@ -103,3 +101,4 @@ export async function getPages(id: string, requestManager: RequestManager, cheer
 export async function getSearchData(query: string | undefined, page: number, requestManager: RequestManager, cheerio: CheerioStatic): Promise<[MangaTile[], boolean]> {
     throw new Error("Not Implemented");
 }
+

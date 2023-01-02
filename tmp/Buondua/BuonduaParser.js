@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSearchData = exports.getPages = exports.parseGalleryData = exports.parseViewMore = exports.getGalleryData = exports.parseHomeSections = void 0;
 const entities = require("entities");
+const BD_DOMAIN = 'https://buondua.com';
 const parseHomeSections = ($, sectionCallback, initialisedHomeSection) => {
     const albums = [];
     const albumCoverGroups = $('div.blog').toArray();
@@ -11,10 +12,11 @@ const parseHomeSections = ($, sectionCallback, initialisedHomeSection) => {
             const image = $('img', albumCover).first().attr('src') ?? '';
             const title = $('img', albumCover).first().attr('alt') ?? '';
             const id = $('a', albumCover).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? '';
-            if (!id || !title)
+            if (!id || !title) {
                 continue;
+            }
             albums.push(createMangaTile({
-                id: id,
+                id: encodeURI(id),
                 image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
                 title: createIconText({ text: entities.decodeHTML(title) })
             }));
@@ -26,16 +28,17 @@ const parseHomeSections = ($, sectionCallback, initialisedHomeSection) => {
 exports.parseHomeSections = parseHomeSections;
 async function getGalleryData(id, requestManager, cheerio) {
     const request = createRequestObject({
-        url: `https://buondua.com/${id}`,
+        url: `${BD_DOMAIN}/${id}`,
         method: 'GET'
     });
+    console.log(request.url);
     const data = await requestManager.schedule(request, 1);
     const $ = cheerio.load(data.data);
     const titles = [];
-    titles.push($('h1.article-header').first().text());
+    titles.push($('div.article-header').first().text());
     const image = $('img', 'div.article-fulltext').first().attr('src') ?? 'https://i.imgur.com/GYUxEX8.png';
     return {
-        id: id,
+        id: encodeURI(id),
         titles: titles,
         image: image
     };
@@ -50,12 +53,11 @@ const parseViewMore = ($) => {
         for (const albumCover of albumCovers) {
             const image = $('img', albumCover).first().attr('src') ?? '';
             const title = $('img', albumCover).first().attr('alt') ?? '';
-            console.log(title);
             const id = $('a', albumCover).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? '';
             if (!id || !title)
                 continue;
             albums.push(createMangaTile({
-                id: id,
+                id: encodeURI(id),
                 image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
                 title: createIconText({ text: entities.decodeHTML(title) })
             }));

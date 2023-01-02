@@ -45,7 +45,7 @@ export const BuonduaInfo: SourceInfo = {
 }
 
 export class Buondua extends Source {
-    readonly requestManager: RequestManager = createRequestManager({
+     readonly requestManager: RequestManager = createRequestManager({
         requestsPerSecond: 4,
         requestTimeout: 15000,
         interceptor: {
@@ -66,7 +66,6 @@ export class Buondua extends Source {
     });
 
     override getMangaShareUrl(mangaId: string): string {
-        console.log('test get manga share url');
         return `${BD_DOMAIN}/${mangaId}`;
     }
 
@@ -90,11 +89,9 @@ export class Buondua extends Source {
 
         parseHomeSections($recent, sectionCallback, recentAlbumsSection);
         parseHomeSections($hot, sectionCallback, hotAlbumsSection);
-        console.log('test get home page sections');
     }
 
     override async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
-        console.log('test view more items');
         const page: number = metadata?.page ?? 0;
         let param = '';
         switch (homepageSectionId) {
@@ -116,9 +113,8 @@ export class Buondua extends Source {
 
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-
         const albums = parseViewMore($);
-        console.log(albums);
+   
         metadata = {page: page + 20};
         return createPagedResults({
             results: albums,
@@ -127,12 +123,10 @@ export class Buondua extends Source {
     }
 
     override async getMangaDetails(mangaId: string): Promise<Manga> {
-        console.log('get manga details test');
-        console.log(mangaId);
         const data = await getGalleryData(mangaId, this.requestManager, this.cheerio);
 
         return createManga({
-            id: mangaId,
+            id: encodeURI(mangaId),
             titles: data.titles,
             image: data.image,
             status: MangaStatus.COMPLETED,
@@ -148,7 +142,7 @@ export class Buondua extends Source {
         const chapters: Chapter[] = [];
 
         chapters.push(createChapter({
-            id: data.id,
+            id: encodeURI(data.id),
             mangaId,
             name: '',
             langCode: LanguageCode.UNKNOWN,
@@ -161,7 +155,7 @@ export class Buondua extends Source {
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
         // return createChapterDetails({
-        //     id: chapterId,
+        //     id: encodeURI(chapterId),
         //     mangaId: mangaId,
         //     longStrip: false,
         //     pages: await getPages(mangaId, this.requestManager, this.cheerio)
