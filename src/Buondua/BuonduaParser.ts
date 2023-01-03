@@ -1,19 +1,10 @@
 import {
-    Chapter,
-    ChapterDetails,
-    Tag,
     HomeSection,
-    LanguageCode,
-    Manga,
-    MangaStatus,
     MangaTile,
-    TagSection,
-    HomeSectionType,
     RequestManager
 } from 'paperback-extensions-common';
 
 import entities = require('entities');
-import { first } from 'cheerio/lib/api/traversing';
 
 const BD_DOMAIN = 'https://buondua.com';
 

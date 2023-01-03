@@ -92,7 +92,6 @@ class Buondua extends paperback_extensions_common_1.Source {
     }
     async getMangaDetails(mangaId) {
         const data = await (0, BuonduaParser_1.getGalleryData)(mangaId, this.requestManager, this.cheerio);
-        const status = paperback_extensions_common_1.MangaStatus;
         return createManga({
             id: mangaId,
             titles: data.titles,
