@@ -16,7 +16,7 @@ const parseHomeSections = ($, sectionCallback, initialisedHomeSection) => {
                 continue;
             }
             albums.push(createMangaTile({
-                id: encodeURI(id),
+                id: encodeURIComponent(id),
                 image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
                 title: createIconText({ text: entities.decodeHTML(title) })
             }));
@@ -31,16 +31,30 @@ async function getGalleryData(id, requestManager, cheerio) {
         url: `${BD_DOMAIN}/${id}`,
         method: 'GET'
     });
-    console.log(request.url);
     const data = await requestManager.schedule(request, 1);
     const $ = cheerio.load(data.data);
-    const titles = [];
-    titles.push($('div.article-header').first().text());
+    // const tagsToRender: TagSection[] = [];
+    const title = $('div.article-header').first().text();
     const image = $('img', 'div.article-fulltext').first().attr('src') ?? 'https://i.imgur.com/GYUxEX8.png';
+    // const tags = $('div.tags', 'div.article-tags').toArray();
+    // for (const tag of tags) {
+    //     const tagId = $('a.tag', tag).attr('href') ?? '';
+    //     console.log(tagId);
+    //     const tagName = $('span', tag).text();
+    //     console.log(tagName);
+    //     tagsToRender.push(
+    //         createTagSection({
+    //             id: encodeURIComponent(tagId),
+    //             label: tagName,
+    //             tags: []
+    //         }
+    //     ));
+    // }
     return {
-        id: encodeURI(id),
-        titles: titles,
-        image: image
+        id: encodeURIComponent(id),
+        titles: [title],
+        image: image,
+        tags: undefined
     };
 }
 exports.getGalleryData = getGalleryData;
@@ -57,7 +71,7 @@ const parseViewMore = ($) => {
             if (!id || !title)
                 continue;
             albums.push(createMangaTile({
-                id: encodeURI(id),
+                id: encodeURIComponent(id),
                 image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
                 title: createIconText({ text: entities.decodeHTML(title) })
             }));
@@ -78,3 +92,8 @@ async function getSearchData(query, page, requestManager, cheerio) {
     throw new Error("Not Implemented");
 }
 exports.getSearchData = getSearchData;
+function fixedEncodeURIComponent(str) {
+    return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
+        return '%' + c.charCodeAt(0).toString(16);
+    });
+}

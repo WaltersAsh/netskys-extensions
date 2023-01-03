@@ -51,7 +51,7 @@ class HentaiHere extends paperback_extensions_common_1.Source {
         const response = await this.requestManager.schedule(request, 1);
         this.CloudFlareError(response.status);
         const $ = this.cheerio.load(response.data);
-        return HentaiHereParser_1.parseMangaDetails($, mangaId);
+        return (0, HentaiHereParser_1.parseMangaDetails)($, mangaId);
     }
     async getChapters(mangaId) {
         const request = createRequestObject({
@@ -61,7 +61,7 @@ class HentaiHere extends paperback_extensions_common_1.Source {
         const response = await this.requestManager.schedule(request, 1);
         this.CloudFlareError(response.status);
         const $ = this.cheerio.load(response.data);
-        return HentaiHereParser_1.parseChapters($, mangaId);
+        return (0, HentaiHereParser_1.parseChapters)($, mangaId);
     }
     async getChapterDetails(mangaId, chapterId) {
         const request = createRequestObject({
@@ -70,7 +70,7 @@ class HentaiHere extends paperback_extensions_common_1.Source {
         });
         const response = await this.requestManager.schedule(request, 1);
         this.CloudFlareError(response.status);
-        return HentaiHereParser_1.parseChapterDetails(response.data, mangaId, chapterId);
+        return (0, HentaiHereParser_1.parseChapterDetails)(response.data, mangaId, chapterId);
     }
     async getHomePageSections(sectionCallback) {
         const request = createRequestObject({
@@ -80,7 +80,7 @@ class HentaiHere extends paperback_extensions_common_1.Source {
         const response = await this.requestManager.schedule(request, 1);
         this.CloudFlareError(response.status);
         const $ = this.cheerio.load(response.data);
-        HentaiHereParser_1.parseHomeSections($, sectionCallback);
+        (0, HentaiHereParser_1.parseHomeSections)($, sectionCallback);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const page = metadata?.page ?? 1;
@@ -106,8 +106,8 @@ class HentaiHere extends paperback_extensions_common_1.Source {
         const response = await this.requestManager.schedule(request, 1);
         this.CloudFlareError(response.status);
         const $ = this.cheerio.load(response.data);
-        const manga = HentaiHereParser_1.parseViewMore($);
-        metadata = !HentaiHereParser_1.isLastPage($) ? { page: page + 1 } : undefined;
+        const manga = (0, HentaiHereParser_1.parseViewMore)($);
+        metadata = !(0, HentaiHereParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
         return createPagedResults({
             results: manga,
             metadata
@@ -120,7 +120,7 @@ class HentaiHere extends paperback_extensions_common_1.Source {
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        return HentaiHereParser_1.parseTags($);
+        return (0, HentaiHereParser_1.parseTags)($);
     }
     async getSearchResults(query, metadata) {
         const page = metadata?.page ?? 1;
@@ -141,8 +141,8 @@ class HentaiHere extends paperback_extensions_common_1.Source {
         }
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        const manga = HentaiHereParser_1.parseSearch($);
-        metadata = !HentaiHereParser_1.isLastPage($) ? { page: page + 1 } : undefined;
+        const manga = (0, HentaiHereParser_1.parseSearch)($);
+        metadata = !(0, HentaiHereParser_1.isLastPage)($) ? { page: page + 1 } : undefined;
         return createPagedResults({
             results: manga,
             metadata

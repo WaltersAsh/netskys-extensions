@@ -60,8 +60,8 @@ class Buondua extends paperback_extensions_common_1.Source {
         const $hot = this.cheerio.load(responseForHot.data);
         const recentAlbumsSection = createHomeSection({ id: 'recent', title: 'Recently Uploaded', view_more: true, type: paperback_extensions_common_1.HomeSectionType.singleRowNormal });
         const hotAlbumsSection = createHomeSection({ id: 'hot', title: 'Hot', view_more: true, type: paperback_extensions_common_1.HomeSectionType.singleRowNormal });
-        BuonduaParser_1.parseHomeSections($recent, sectionCallback, recentAlbumsSection);
-        BuonduaParser_1.parseHomeSections($hot, sectionCallback, hotAlbumsSection);
+        (0, BuonduaParser_1.parseHomeSections)($recent, sectionCallback, recentAlbumsSection);
+        (0, BuonduaParser_1.parseHomeSections)($hot, sectionCallback, hotAlbumsSection);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const page = metadata?.page ?? 0;
@@ -83,7 +83,7 @@ class Buondua extends paperback_extensions_common_1.Source {
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        const albums = BuonduaParser_1.parseViewMore($);
+        const albums = (0, BuonduaParser_1.parseViewMore)($);
         metadata = { page: page + 20 };
         return createPagedResults({
             results: albums,
@@ -91,25 +91,27 @@ class Buondua extends paperback_extensions_common_1.Source {
         });
     }
     async getMangaDetails(mangaId) {
-        const data = await BuonduaParser_1.getGalleryData(mangaId, this.requestManager, this.cheerio);
+        const data = await (0, BuonduaParser_1.getGalleryData)(mangaId, this.requestManager, this.cheerio);
+        const status = paperback_extensions_common_1.MangaStatus;
         return createManga({
-            id: encodeURI(mangaId),
+            id: mangaId,
             titles: data.titles,
             image: data.image,
-            status: paperback_extensions_common_1.MangaStatus.COMPLETED,
-            author: '--',
-            artist: '--',
-            tags: undefined,
+            status: paperback_extensions_common_1.MangaStatus.UNKNOWN,
+            langFlag: paperback_extensions_common_1.LanguageCode.UNKNOWN,
+            author: 'Buondua',
+            artist: 'Buondua',
+            tags: data.tags,
             desc: undefined,
         });
     }
     async getChapters(mangaId) {
-        const data = await BuonduaParser_1.getGalleryData(mangaId, this.requestManager, this.cheerio);
+        const data = await (0, BuonduaParser_1.getGalleryData)(mangaId, this.requestManager, this.cheerio);
         const chapters = [];
         chapters.push(createChapter({
             id: encodeURI(data.id),
             mangaId,
-            name: '',
+            name: 'Album',
             langCode: paperback_extensions_common_1.LanguageCode.UNKNOWN,
             chapNum: 1,
             time: new Date(),

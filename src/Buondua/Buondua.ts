@@ -113,8 +113,8 @@ export class Buondua extends Source {
 
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
+        
         const albums = parseViewMore($);
-   
         metadata = {page: page + 20};
         return createPagedResults({
             results: albums,
@@ -126,13 +126,14 @@ export class Buondua extends Source {
         const data = await getGalleryData(mangaId, this.requestManager, this.cheerio);
 
         return createManga({
-            id: encodeURI(mangaId),
+            id: mangaId,
             titles: data.titles,
             image: data.image,
-            status: MangaStatus.COMPLETED,
-            author: '--',
-            artist: '--',
-            tags: undefined,
+            status: MangaStatus.UNKNOWN,
+            langFlag: LanguageCode.UNKNOWN,
+            author: 'Buondua',
+            artist: 'Buondua',
+            tags: data.tags,
             desc: undefined,
         });
     }
@@ -144,7 +145,7 @@ export class Buondua extends Source {
         chapters.push(createChapter({
             id: encodeURI(data.id),
             mangaId,
-            name: '',
+            name: 'Album',
             langCode: LanguageCode.UNKNOWN,
             chapNum: 1,
             time: new Date(),
