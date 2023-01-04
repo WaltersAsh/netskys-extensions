@@ -20,6 +20,7 @@ import {
 import { 
     getAlbums,
     getGalleryData,
+    getPages
 } from './BuonduaParser';
 
 const BD_DOMAIN = 'https://buondua.com';
@@ -128,7 +129,7 @@ export class Buondua extends Source {
             id: mangaId,
             titles: data.titles,
             image: data.image,
-            status: MangaStatus.UNKNOWN,
+            status: MangaStatus.COMPLETED,
             langFlag: LanguageCode.UNKNOWN,
             author: 'Buondua',
             artist: 'Buondua',
@@ -140,9 +141,8 @@ export class Buondua extends Source {
     async getChapters(mangaId: string): Promise<Chapter[]> {
         const data = await getGalleryData(mangaId, this.requestManager, this.cheerio);
         const chapters: Chapter[] = [];
-
         chapters.push(createChapter({
-            id: encodeURI(data.id),
+            id: data.id,
             mangaId,
             name: 'Album',
             langCode: LanguageCode.UNKNOWN,
@@ -154,13 +154,12 @@ export class Buondua extends Source {
     }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        // return createChapterDetails({
-        //     id: encodeURI(chapterId),
-        //     mangaId: mangaId,
-        //     longStrip: false,
-        //     pages: await getPages(mangaId, this.requestManager, this.cheerio)
-        // })
-        throw new Error("Not Implemented");
+        return createChapterDetails({
+            id: chapterId,
+            mangaId: mangaId,
+            longStrip: false,
+            pages: await getPages(mangaId, this.requestManager, this.cheerio)
+        })
     }
 
     override async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {

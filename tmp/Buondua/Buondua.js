@@ -100,7 +100,7 @@ class Buondua extends paperback_extensions_common_1.Source {
             id: mangaId,
             titles: data.titles,
             image: data.image,
-            status: paperback_extensions_common_1.MangaStatus.UNKNOWN,
+            status: paperback_extensions_common_1.MangaStatus.COMPLETED,
             langFlag: paperback_extensions_common_1.LanguageCode.UNKNOWN,
             author: 'Buondua',
             artist: 'Buondua',
@@ -112,7 +112,7 @@ class Buondua extends paperback_extensions_common_1.Source {
         const data = await (0, BuonduaParser_1.getGalleryData)(mangaId, this.requestManager, this.cheerio);
         const chapters = [];
         chapters.push(createChapter({
-            id: encodeURI(data.id),
+            id: data.id,
             mangaId,
             name: 'Album',
             langCode: paperback_extensions_common_1.LanguageCode.UNKNOWN,
@@ -122,13 +122,12 @@ class Buondua extends paperback_extensions_common_1.Source {
         return chapters;
     }
     async getChapterDetails(mangaId, chapterId) {
-        // return createChapterDetails({
-        //     id: encodeURI(chapterId),
-        //     mangaId: mangaId,
-        //     longStrip: false,
-        //     pages: await getPages(mangaId, this.requestManager, this.cheerio)
-        // })
-        throw new Error("Not Implemented");
+        return createChapterDetails({
+            id: chapterId,
+            mangaId: mangaId,
+            longStrip: false,
+            pages: await (0, BuonduaParser_1.getPages)(mangaId, this.requestManager, this.cheerio)
+        });
     }
     async getSearchResults(query, metadata) {
         throw new Error("Not Implemented");

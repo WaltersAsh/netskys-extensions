@@ -68,8 +68,35 @@ export async function getGalleryData(id: string, requestManager: RequestManager,
     }
 }
 
-export async function getPages(id: string, requestManager: RequestManager, cheerio: CheerioStatic): Promise<string[]> {
-    throw new Error("Not Implemented");
+export async function getPages(id: string, requestManager: RequestManager, cheerio: CheerioAPI): Promise<string[]> {
+    const request = createRequestObject({
+        url: `${BD_DOMAIN}/${id}`,
+        method: 'GET'
+    });
+
+    const data = await requestManager.schedule(request, 1);
+    let $ = cheerio.load(data.data);
+    
+    const pages: string[] = [];
+    const pageCount = parseInt($('a.pagination-link', 'nav.pagination').last().text());
+
+    for (let i = 0; i < pageCount; i++) {
+        const request = createRequestObject({
+            url: `${BD_DOMAIN}/${id}?page=${i + 1}`,
+            method: 'GET'
+        });
+    
+        const data = await requestManager.schedule(request, 1);
+        const $ = cheerio.load(data.data);
+
+        const images = $('p', 'div.article-fulltext').toArray();
+        for (const img of images) {
+            const imageString = $('img', img).attr('src') ?? 'https://i.imgur.com/GYUxEX8.png';
+            pages.push(imageString);
+        }
+    }
+
+    return pages;
 }
 
 export async function getSearchData(query: string | undefined, page: number, requestManager: RequestManager, cheerio: CheerioStatic): Promise<[MangaTile[], boolean]> {

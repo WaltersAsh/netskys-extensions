@@ -57,7 +57,28 @@ async function getGalleryData(id, requestManager, cheerio) {
 }
 exports.getGalleryData = getGalleryData;
 async function getPages(id, requestManager, cheerio) {
-    throw new Error("Not Implemented");
+    const request = createRequestObject({
+        url: `${BD_DOMAIN}/${id}`,
+        method: 'GET'
+    });
+    const data = await requestManager.schedule(request, 1);
+    let $ = cheerio.load(data.data);
+    const pages = [];
+    const pageCount = parseInt($('a.pagination-link', 'nav.pagination').last().text());
+    for (let i = 0; i < pageCount; i++) {
+        const request = createRequestObject({
+            url: `${BD_DOMAIN}/${id}?page=${i + 1}`,
+            method: 'GET'
+        });
+        const data = await requestManager.schedule(request, 1);
+        const $ = cheerio.load(data.data);
+        const images = $('p', 'div.article-fulltext').toArray();
+        for (const img of images) {
+            const imageString = $('img', img).attr('src') ?? 'https://i.imgur.com/GYUxEX8.png';
+            pages.push(imageString);
+        }
+    }
+    return pages;
 }
 exports.getPages = getPages;
 async function getSearchData(query, page, requestManager, cheerio) {
