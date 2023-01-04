@@ -1,5 +1,4 @@
 import {
-    HomeSection,
     MangaTile,
     RequestManager
 } from 'paperback-extensions-common';
@@ -8,7 +7,7 @@ import entities = require('entities');
 
 const BD_DOMAIN = 'https://buondua.com';
 
-export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: HomeSection) => void, initialisedHomeSection: HomeSection): void => {
+export function getAlbums ($: CheerioStatic): MangaTile[] {
     const albums: MangaTile[] = [];
     const albumCoverGroups = $('div.blog').toArray();
 
@@ -20,9 +19,7 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
             const title = $('img', albumCover).first().attr('alt') ?? '';
             const id = $('a', albumCover).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? '';
 
-            if (!id || !title) {
-                continue;
-            }
+            if (!id || !title) continue;
             albums.push(createMangaTile({
                 id: encodeURIComponent(id),
                 image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
@@ -31,8 +28,7 @@ export const parseHomeSections = ($: CheerioStatic, sectionCallback: (section: H
         }
     }
 
-    initialisedHomeSection.items = albums;
-    sectionCallback(initialisedHomeSection);
+    return albums;
 }
 
 export async function getGalleryData(id: string, requestManager: RequestManager, cheerio: CheerioAPI): Promise<any> {
@@ -72,35 +68,6 @@ export async function getGalleryData(id: string, requestManager: RequestManager,
     }
 }
 
-export const parseViewMore = ($: CheerioStatic): MangaTile[] => {
-    const albums: MangaTile[] = [];
-    const collectedIds: string[] = [];
-    const albumCoverGroups = $('div.blog').toArray();
-
-    for (const albumCoverGroup of albumCoverGroups) {
-        const albumCovers = $('div.items-row', albumCoverGroup).toArray();
-
-        for (const albumCover of albumCovers) {
-            const image = $('img', albumCover).first().attr('src') ?? '';
-            const title = $('img', albumCover).first().attr('alt') ?? '';
-            const id = $('a', albumCover).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? '';
-
-            if (!id || !title) continue;
-            albums.push(createMangaTile({
-                id: encodeURIComponent(id),
-                image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
-                title: createIconText({text: entities.decodeHTML(title)})
-            }));
-            collectedIds.push(id);
-        }
-    }
-
-    return albums;
-}
-
-export async function parseGalleryData(id: string, requestManager: RequestManager, cheerio: CheerioStatic): Promise<any> {
-}
-
 export async function getPages(id: string, requestManager: RequestManager, cheerio: CheerioStatic): Promise<string[]> {
     throw new Error("Not Implemented");
 }
@@ -108,9 +75,3 @@ export async function getPages(id: string, requestManager: RequestManager, cheer
 export async function getSearchData(query: string | undefined, page: number, requestManager: RequestManager, cheerio: CheerioStatic): Promise<[MangaTile[], boolean]> {
     throw new Error("Not Implemented");
 }
-
-function fixedEncodeURIComponent(str: string) {
-    return encodeURIComponent(str).replace(/[!'()*]/g, function(c) {
-      return '%' + c.charCodeAt(0).toString(16);
-    });
-  }

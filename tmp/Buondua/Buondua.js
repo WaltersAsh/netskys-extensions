@@ -52,16 +52,20 @@ class Buondua extends paperback_extensions_common_1.Source {
         });
         const responseForRecent = await this.requestManager.schedule(requestForRecent, 1);
         const $recent = this.cheerio.load(responseForRecent.data);
+        const recentAlbumsSection = createHomeSection({ id: 'recent', title: 'Recently Uploaded', view_more: true, type: paperback_extensions_common_1.HomeSectionType.singleRowNormal });
+        const recentAlbums = (0, BuonduaParser_1.getAlbums)($recent);
+        recentAlbumsSection.items = recentAlbums;
+        sectionCallback(recentAlbumsSection);
         const requestForHot = createRequestObject({
             url: `${BD_DOMAIN}/hot`,
             method: 'GET'
         });
         const responseForHot = await this.requestManager.schedule(requestForHot, 1);
         const $hot = this.cheerio.load(responseForHot.data);
-        const recentAlbumsSection = createHomeSection({ id: 'recent', title: 'Recently Uploaded', view_more: true, type: paperback_extensions_common_1.HomeSectionType.singleRowNormal });
         const hotAlbumsSection = createHomeSection({ id: 'hot', title: 'Hot', view_more: true, type: paperback_extensions_common_1.HomeSectionType.singleRowNormal });
-        (0, BuonduaParser_1.parseHomeSections)($recent, sectionCallback, recentAlbumsSection);
-        (0, BuonduaParser_1.parseHomeSections)($hot, sectionCallback, hotAlbumsSection);
+        const hotAlbums = (0, BuonduaParser_1.getAlbums)($hot);
+        hotAlbumsSection.items = hotAlbums;
+        sectionCallback(hotAlbumsSection);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
         const page = metadata?.page ?? 0;
@@ -83,7 +87,7 @@ class Buondua extends paperback_extensions_common_1.Source {
         });
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        const albums = (0, BuonduaParser_1.parseViewMore)($);
+        const albums = (0, BuonduaParser_1.getAlbums)($);
         metadata = { page: page + 20 };
         return createPagedResults({
             results: albums,
