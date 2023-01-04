@@ -110,7 +110,6 @@ export class Buondua extends Source {
             method: 'GET',
             param
         });
-
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
         
@@ -159,10 +158,24 @@ export class Buondua extends Source {
             mangaId: mangaId,
             longStrip: false,
             pages: await getPages(mangaId, this.requestManager, this.cheerio)
-        })
+        });
     }
 
     override async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
-        throw new Error("Not Implemented");
+        const page: number = metadata?.page ?? 0;
+
+        const request = createRequestObject({
+            url: `${BD_DOMAIN}/?search=${query.title}&start=${page}`,
+            method: 'GET'
+        });
+        const response = await this.requestManager.schedule(request, 1);
+        const $ = this.cheerio.load(response.data);
+        
+        const albums = getAlbums($);
+        metadata = {page: page + 20};
+        return createPagedResults({
+            results: albums,
+            metadata
+        });
     }
 }

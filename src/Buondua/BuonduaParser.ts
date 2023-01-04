@@ -19,7 +19,9 @@ export function getAlbums ($: CheerioStatic): MangaTile[] {
             const title = $('img', albumCover).first().attr('alt') ?? '';
             const id = $('a', albumCover).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? '';
 
-            if (!id || !title) continue;
+            if (!id || !title) {
+                continue;
+            }
             albums.push(createMangaTile({
                 id: encodeURIComponent(id),
                 image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
@@ -97,8 +99,4 @@ export async function getPages(id: string, requestManager: RequestManager, cheer
     }
 
     return pages;
-}
-
-export async function getSearchData(query: string | undefined, page: number, requestManager: RequestManager, cheerio: CheerioStatic): Promise<[MangaTile[], boolean]> {
-    throw new Error("Not Implemented");
 }

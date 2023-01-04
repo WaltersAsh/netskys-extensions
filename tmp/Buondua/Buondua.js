@@ -130,7 +130,19 @@ class Buondua extends paperback_extensions_common_1.Source {
         });
     }
     async getSearchResults(query, metadata) {
-        throw new Error("Not Implemented");
+        const page = metadata?.page ?? 0;
+        const request = createRequestObject({
+            url: `${BD_DOMAIN}/?search=${query.title}&start=${page}`,
+            method: 'GET'
+        });
+        const response = await this.requestManager.schedule(request, 1);
+        const $ = this.cheerio.load(response.data);
+        const albums = (0, BuonduaParser_1.getAlbums)($);
+        metadata = { page: page + 20 };
+        return createPagedResults({
+            results: albums,
+            metadata
+        });
     }
 }
 exports.Buondua = Buondua;

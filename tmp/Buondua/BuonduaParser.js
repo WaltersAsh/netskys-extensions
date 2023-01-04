@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSearchData = exports.getPages = exports.getGalleryData = exports.getAlbums = void 0;
+exports.getPages = exports.getGalleryData = exports.getAlbums = void 0;
 const entities = require("entities");
 const BD_DOMAIN = 'https://buondua.com';
 function getAlbums($) {
@@ -12,8 +12,9 @@ function getAlbums($) {
             const image = $('img', albumCover).first().attr('src') ?? '';
             const title = $('img', albumCover).first().attr('alt') ?? '';
             const id = $('a', albumCover).attr('href')?.replace(/\/$/, '')?.split('/').pop() ?? '';
-            if (!id || !title)
+            if (!id || !title) {
                 continue;
+            }
             albums.push(createMangaTile({
                 id: encodeURIComponent(id),
                 image: image ? image : 'https://i.imgur.com/GYUxEX8.png',
@@ -81,7 +82,3 @@ async function getPages(id, requestManager, cheerio) {
     return pages;
 }
 exports.getPages = getPages;
-async function getSearchData(query, page, requestManager, cheerio) {
-    throw new Error("Not Implemented");
-}
-exports.getSearchData = getSearchData;
