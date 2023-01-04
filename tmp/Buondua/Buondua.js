@@ -100,12 +100,12 @@ class Buondua extends paperback_extensions_common_1.Source {
             id: mangaId,
             titles: data.titles,
             image: data.image,
-            status: paperback_extensions_common_1.MangaStatus.COMPLETED,
+            status: paperback_extensions_common_1.MangaStatus.UNKNOWN,
             langFlag: paperback_extensions_common_1.LanguageCode.UNKNOWN,
             author: 'Buondua',
             artist: 'Buondua',
             tags: data.tags,
-            desc: undefined,
+            desc: 'Test',
         });
     }
     async getChapters(mangaId) {
@@ -131,10 +131,19 @@ class Buondua extends paperback_extensions_common_1.Source {
     }
     async getSearchResults(query, metadata) {
         const page = metadata?.page ?? 0;
-        const request = createRequestObject({
-            url: `${BD_DOMAIN}/?search=${query.title}&start=${page}`,
-            method: 'GET'
-        });
+        let request;
+        if (query.title) {
+            request = createRequestObject({
+                url: `${BD_DOMAIN}/?search=${encodeURIComponent(query.title ?? '')}&start=${page}`,
+                method: 'GET'
+            });
+        }
+        else {
+            request = createRequestObject({
+                url: `${BD_DOMAIN}${query.includedTags?.map((x) => decodeURIComponent(x.id))})`,
+                method: 'GET'
+            });
+        }
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
         const albums = (0, BuonduaParser_1.getAlbums)($);

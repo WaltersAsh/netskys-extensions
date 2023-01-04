@@ -128,12 +128,12 @@ export class Buondua extends Source {
             id: mangaId,
             titles: data.titles,
             image: data.image,
-            status: MangaStatus.COMPLETED,
+            status: MangaStatus.UNKNOWN,
             langFlag: LanguageCode.UNKNOWN,
             author: 'Buondua',
             artist: 'Buondua',
             tags: data.tags,
-            desc: undefined,
+            desc: 'Test',
         });
     }
 
@@ -164,10 +164,18 @@ export class Buondua extends Source {
     override async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
         const page: number = metadata?.page ?? 0;
 
-        const request = createRequestObject({
-            url: `${BD_DOMAIN}/?search=${query.title}&start=${page}`,
-            method: 'GET'
-        });
+        let request;
+        if (query.title) {
+            request = createRequestObject({
+                url: `${BD_DOMAIN}/?search=${encodeURIComponent(query.title ?? '')}&start=${page}`,
+                method: 'GET'
+            });
+        } else {
+            request = createRequestObject({
+                url: `${BD_DOMAIN}${query.includedTags?.map((x) => decodeURIComponent(x.id))})`,
+                method: 'GET'
+            });
+        }
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
         

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPages = exports.getGalleryData = exports.getAlbums = void 0;
+exports.isLastPage = exports.getPages = exports.getGalleryData = exports.getAlbums = void 0;
 const entities = require("entities");
 const BD_DOMAIN = 'https://buondua.com';
 function getAlbums($) {
@@ -32,28 +32,30 @@ async function getGalleryData(id, requestManager, cheerio) {
     });
     const data = await requestManager.schedule(request, 1);
     const $ = cheerio.load(data.data);
-    // const tagsToRender: TagSection[] = [];
+    //const tagSections: TagSection[] = [];
     const title = $('div.article-header').first().text();
     const image = $('img', 'div.article-fulltext').first().attr('src') ?? 'https://i.imgur.com/GYUxEX8.png';
-    // const tags = $('div.tags', 'div.article-tags').toArray();
-    // for (const tag of tags) {
-    //     const tagId = $('a.tag', tag).attr('href') ?? '';
-    //     console.log(tagId);
-    //     const tagName = $('span', tag).text();
-    //     console.log(tagName);
-    //     tagsToRender.push(
-    //         createTagSection({
-    //             id: encodeURIComponent(tagId),
-    //             label: tagName,
-    //             tags: []
-    //         }
-    //     ));
-    // }
+    const tagHeader = $('div.article-tags').first();
+    const tags = $('a.tag', tagHeader).toArray();
+    const tagsToRender = [];
+    for (const tag of tags) {
+        const label = $('span', tag).text();
+        const id = $(tag).attr('href');
+        if (!id || !label) {
+            continue;
+        }
+        tagsToRender.push({ id: encodeURIComponent(id), label: label });
+    }
+    const tagSections = [createTagSection({
+            id: '0',
+            label: 'Tags',
+            tags: tagsToRender.map(x => createTag(x))
+        })];
     return {
         id: encodeURIComponent(id),
         titles: [title],
         image: image,
-        tags: undefined
+        tags: tagSections
     };
 }
 exports.getGalleryData = getGalleryData;
@@ -82,3 +84,7 @@ async function getPages(id, requestManager, cheerio) {
     return pages;
 }
 exports.getPages = getPages;
+const isLastPage = ($) => {
+    throw new Error('Not Implemented');
+};
+exports.isLastPage = isLastPage;
