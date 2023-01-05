@@ -20,7 +20,8 @@ import {
 import { 
     getAlbums,
     getGalleryData,
-    getPages
+    getPages,
+    isLastPage
 } from './BuonduaParser';
 
 const BD_DOMAIN = 'https://buondua.com';
@@ -74,7 +75,7 @@ export class Buondua extends Source {
         });
         const responseForRecent = await this.requestManager.schedule(requestForRecent, 1);
         const $recent = this.cheerio.load(responseForRecent.data);
-        const recentAlbumsSection = createHomeSection({ id: 'recent', title: 'Recently Uploaded', view_more: true, type: HomeSectionType.singleRowNormal });
+        const recentAlbumsSection = createHomeSection({id: 'recent', title: 'Recently Uploaded', view_more: true, type: HomeSectionType.singleRowNormal});
         const recentAlbums = getAlbums($recent);
         recentAlbumsSection.items = recentAlbums;
         sectionCallback(recentAlbumsSection);
@@ -85,21 +86,22 @@ export class Buondua extends Source {
         });
         const responseForHot = await this.requestManager.schedule(requestForHot, 1);
         const $hot = this.cheerio.load(responseForHot.data);
-        const hotAlbumsSection = createHomeSection({ id: 'hot', title: 'Hot', view_more: true, type: HomeSectionType.singleRowNormal });
+        const hotAlbumsSection = createHomeSection({id: 'hot', title: 'Hot', view_more: true, type: HomeSectionType.singleRowNormal});
         const hotAlbums = getAlbums($hot);
         hotAlbumsSection.items = hotAlbums;
         sectionCallback(hotAlbumsSection);
     }
 
     override async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
-        const page: number = metadata?.page ?? 0;
+        const albumNum: number = metadata?.page ?? 0;
+
         let param = '';
         switch (homepageSectionId) {
             case 'recent':
-                param = `/?start=${page}`;
+                param = `/?start=${albumNum}`;
                 break;
             case 'hot':
-                param = `/hot?start=${page}`;
+                param = `/hot?start=${albumNum}`;
                 break;
             default:
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
@@ -114,7 +116,7 @@ export class Buondua extends Source {
         const $ = this.cheerio.load(response.data);
         
         const albums = getAlbums($);
-        metadata = {page: page + 20};
+        metadata = !isLastPage($) ? {page: albumNum + albums.length} : undefined;
         return createPagedResults({
             results: albums,
             metadata
@@ -133,7 +135,6 @@ export class Buondua extends Source {
             author: 'Buondua',
             artist: 'Buondua',
             tags: data.tags,
-            desc: 'Test',
         });
     }
 
@@ -146,7 +147,7 @@ export class Buondua extends Source {
             name: 'Album',
             langCode: LanguageCode.UNKNOWN,
             chapNum: 1,
-            time: new Date(),
+            time: data.date,
         }));
 
         return chapters;
@@ -162,25 +163,28 @@ export class Buondua extends Source {
     }
 
     override async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
-        const page: number = metadata?.page ?? 0;
-
+        const albumNum: number = metadata?.page ?? 0;
+        
         let request;
         if (query.title) {
             request = createRequestObject({
-                url: `${BD_DOMAIN}/?search=${encodeURIComponent(query.title ?? '')}&start=${page}`,
+                url: `${BD_DOMAIN}/?search=${encodeURIComponent(query.title ?? '')}&start=${albumNum}`,
                 method: 'GET'
             });
         } else {
             request = createRequestObject({
-                url: `${BD_DOMAIN}${query.includedTags?.map((x) => decodeURIComponent(x.id))})`,
+                url: `${BD_DOMAIN}${query.includedTags?.map((x) => decodeURIComponent(x.id))}?start=${albumNum})`,
                 method: 'GET'
             });
         }
+      
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        
+        console.log('Last page: ' + isLastPage($));
+
         const albums = getAlbums($);
-        metadata = {page: page + 20};
+        metadata = !isLastPage($) ? {page: albumNum + albums.length} : undefined;
+        metadata = {page: albumNum + albums.length};
         return createPagedResults({
             results: albums,
             metadata

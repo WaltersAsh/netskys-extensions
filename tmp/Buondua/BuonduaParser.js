@@ -85,6 +85,8 @@ async function getPages(id, requestManager, cheerio) {
 }
 exports.getPages = getPages;
 const isLastPage = ($) => {
-    throw new Error('Not Implemented');
+    const lastPageNum = parseInt($('span', 'nav.pagination-list').last().text()) ?? -1;
+    const currPageNum = lastPageNum ? parseInt($('a.is-current', 'li').text()) : -1;
+    return (lastPageNum === -1 || lastPageNum === currPageNum) ? true : false;
 };
 exports.isLastPage = isLastPage;

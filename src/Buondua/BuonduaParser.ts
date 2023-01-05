@@ -44,9 +44,12 @@ export async function getGalleryData(id: string, requestManager: RequestManager,
     const data = await requestManager.schedule(request, 1);
     const $ = cheerio.load(data.data);
     
-    //const tagSections: TagSection[] = [];
     const title = $('div.article-header').first().text();
     const image = $('img', 'div.article-fulltext').first().attr('src') ?? 'https://i.imgur.com/GYUxEX8.png';
+    const dateInfo = $('small', 'div.article-info').last().text().split(' ');
+    const timeSplit = dateInfo[0]?.split(':') ?? ['00', '00'];
+    const dateSplit = dateInfo[1]?.split('-') ?? ['00', '00', '0000'];
+
     const tagHeader = $('div.article-tags').first();
     const tags = $('a.tag', tagHeader).toArray();
     const tagsToRender: Tag[] = [];
@@ -64,12 +67,17 @@ export async function getGalleryData(id: string, requestManager: RequestManager,
         label: 'Tags',
         tags: tagsToRender.map(x => createTag(x)) 
     })];
-    
+
     return {
         id: encodeURIComponent(id),
         titles: [title],
         image: image,
-        tags: tagSections
+        tags: tagSections,
+        date: new Date(parseInt(dateSplit[2] ?? '0000'), 
+                       parseInt(dateSplit[1] ?? '00'), 
+                       parseInt(dateSplit[0] ?? '00'),
+                       parseInt(timeSplit[0] ?? '00'),
+                       parseInt(timeSplit[1] ?? '00'))
     }
 }
 
@@ -105,5 +113,17 @@ export async function getPages(id: string, requestManager: RequestManager, cheer
 }
 
 export const isLastPage = ($: CheerioStatic): boolean => {
-    throw new Error('Not Implemented');
+    const nav = $('nav.pagination', 'div.is-full.main-container');
+    const pageList = $('ul.pagination-list', nav);
+    const lastPageNum = parseInt($('li', pageList).last().text());
+    const currPageNum = parseInt($('a.is-current', pageList).text());
+    console.log('Nav: ' + nav.text());
+    console.log('Last page num: ' + lastPageNum);
+    console.log('Current page num: ' + currPageNum);
+
+    return (isNaN(lastPageNum) || 
+            isNaN(currPageNum) ||
+            lastPageNum === -1 || 
+            lastPageNum === currPageNum ? 
+            true : false);
 }

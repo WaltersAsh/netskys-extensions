@@ -146,6 +146,7 @@ class Buondua extends paperback_extensions_common_1.Source {
         }
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
+        console.log('Is last page: ' + (0, BuonduaParser_1.isLastPage)($));
         const albums = (0, BuonduaParser_1.getAlbums)($);
         metadata = { page: page + 20 };
         return createPagedResults({
