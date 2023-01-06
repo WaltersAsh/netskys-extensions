@@ -135,6 +135,7 @@ export class Buondua extends Source {
             author: 'Buondua',
             artist: 'Buondua',
             tags: data.tags,
+            desc: data.desc
         });
     }
 
@@ -147,7 +148,7 @@ export class Buondua extends Source {
             name: 'Album',
             langCode: LanguageCode.UNKNOWN,
             chapNum: 1,
-            time: data.date,
+            time: new Date(),
         }));
 
         return chapters;
@@ -180,7 +181,6 @@ export class Buondua extends Source {
       
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        console.log('Last page: ' + isLastPage($));
 
         const albums = getAlbums($);
         metadata = !isLastPage($) ? {page: albumNum + albums.length} : undefined;

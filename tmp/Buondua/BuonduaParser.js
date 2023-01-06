@@ -32,9 +32,9 @@ async function getGalleryData(id, requestManager, cheerio) {
     });
     const data = await requestManager.schedule(request, 1);
     const $ = cheerio.load(data.data);
-    //const tagSections: TagSection[] = [];
     const title = $('div.article-header').first().text();
     const image = $('img', 'div.article-fulltext').first().attr('src') ?? 'https://i.imgur.com/GYUxEX8.png';
+    const desc = $('small', 'div.article-info').last().text();
     const tagHeader = $('div.article-tags').first();
     const tags = $('a.tag', tagHeader).toArray();
     const tagsToRender = [];
@@ -55,7 +55,8 @@ async function getGalleryData(id, requestManager, cheerio) {
         id: encodeURIComponent(id),
         titles: [title],
         image: image,
-        tags: tagSections
+        tags: tagSections,
+        desc: desc
     };
 }
 exports.getGalleryData = getGalleryData;
@@ -85,8 +86,14 @@ async function getPages(id, requestManager, cheerio) {
 }
 exports.getPages = getPages;
 const isLastPage = ($) => {
-    const lastPageNum = parseInt($('span', 'nav.pagination-list').last().text()) ?? -1;
-    const currPageNum = lastPageNum ? parseInt($('a.is-current', 'li').text()) : -1;
-    return (lastPageNum === -1 || lastPageNum === currPageNum) ? true : false;
+    const nav = $('nav.pagination', 'div.is-full.main-container');
+    const pageList = $('ul.pagination-list', nav);
+    const lastPageNum = parseInt($('li', pageList).last().text());
+    const currPageNum = parseInt($('a.is-current', pageList).text());
+    return (isNaN(lastPageNum) ||
+        isNaN(currPageNum) ||
+        lastPageNum === -1 ||
+        lastPageNum === currPageNum ?
+        true : false);
 };
 exports.isLastPage = isLastPage;

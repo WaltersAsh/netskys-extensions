@@ -68,14 +68,14 @@ class Buondua extends paperback_extensions_common_1.Source {
         sectionCallback(hotAlbumsSection);
     }
     async getViewMoreItems(homepageSectionId, metadata) {
-        const page = metadata?.page ?? 0;
+        const albumNum = metadata?.page ?? 0;
         let param = '';
         switch (homepageSectionId) {
             case 'recent':
-                param = `/?start=${page}`;
+                param = `/?start=${albumNum}`;
                 break;
             case 'hot':
-                param = `/hot?start=${page}`;
+                param = `/hot?start=${albumNum}`;
                 break;
             default:
                 throw new Error('Requested to getViewMoreItems for a section ID which doesn\'t exist');
@@ -88,7 +88,7 @@ class Buondua extends paperback_extensions_common_1.Source {
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
         const albums = (0, BuonduaParser_1.getAlbums)($);
-        metadata = { page: page + 20 };
+        metadata = !(0, BuonduaParser_1.isLastPage)($) ? { page: albumNum + albums.length } : undefined;
         return createPagedResults({
             results: albums,
             metadata
@@ -105,7 +105,7 @@ class Buondua extends paperback_extensions_common_1.Source {
             author: 'Buondua',
             artist: 'Buondua',
             tags: data.tags,
-            desc: 'Test',
+            desc: data.desc
         });
     }
     async getChapters(mangaId) {
@@ -130,25 +130,25 @@ class Buondua extends paperback_extensions_common_1.Source {
         });
     }
     async getSearchResults(query, metadata) {
-        const page = metadata?.page ?? 0;
+        const albumNum = metadata?.page ?? 0;
         let request;
         if (query.title) {
             request = createRequestObject({
-                url: `${BD_DOMAIN}/?search=${encodeURIComponent(query.title ?? '')}&start=${page}`,
+                url: `${BD_DOMAIN}/?search=${encodeURIComponent(query.title ?? '')}&start=${albumNum}`,
                 method: 'GET'
             });
         }
         else {
             request = createRequestObject({
-                url: `${BD_DOMAIN}${query.includedTags?.map((x) => decodeURIComponent(x.id))})`,
+                url: `${BD_DOMAIN}${query.includedTags?.map((x) => decodeURIComponent(x.id))}?start=${albumNum})`,
                 method: 'GET'
             });
         }
         const response = await this.requestManager.schedule(request, 1);
         const $ = this.cheerio.load(response.data);
-        console.log('Is last page: ' + (0, BuonduaParser_1.isLastPage)($));
         const albums = (0, BuonduaParser_1.getAlbums)($);
-        metadata = { page: page + 20 };
+        metadata = !(0, BuonduaParser_1.isLastPage)($) ? { page: albumNum + albums.length } : undefined;
+        metadata = { page: albumNum + albums.length };
         return createPagedResults({
             results: albums,
             metadata

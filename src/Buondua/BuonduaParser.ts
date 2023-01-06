@@ -46,9 +46,7 @@ export async function getGalleryData(id: string, requestManager: RequestManager,
     
     const title = $('div.article-header').first().text();
     const image = $('img', 'div.article-fulltext').first().attr('src') ?? 'https://i.imgur.com/GYUxEX8.png';
-    const dateInfo = $('small', 'div.article-info').last().text().split(' ');
-    const timeSplit = dateInfo[0]?.split(':') ?? ['00', '00'];
-    const dateSplit = dateInfo[1]?.split('-') ?? ['00', '00', '0000'];
+    const desc = $('small', 'div.article-info').last().text();
 
     const tagHeader = $('div.article-tags').first();
     const tags = $('a.tag', tagHeader).toArray();
@@ -73,11 +71,7 @@ export async function getGalleryData(id: string, requestManager: RequestManager,
         titles: [title],
         image: image,
         tags: tagSections,
-        date: new Date(parseInt(dateSplit[2] ?? '0000'), 
-                       parseInt(dateSplit[1] ?? '00'), 
-                       parseInt(dateSplit[0] ?? '00'),
-                       parseInt(timeSplit[0] ?? '00'),
-                       parseInt(timeSplit[1] ?? '00'))
+        desc: desc
     }
 }
 
@@ -117,9 +111,6 @@ export const isLastPage = ($: CheerioStatic): boolean => {
     const pageList = $('ul.pagination-list', nav);
     const lastPageNum = parseInt($('li', pageList).last().text());
     const currPageNum = parseInt($('a.is-current', pageList).text());
-    console.log('Nav: ' + nav.text());
-    console.log('Last page num: ' + lastPageNum);
-    console.log('Current page num: ' + currPageNum);
 
     return (isNaN(lastPageNum) || 
             isNaN(currPageNum) ||
